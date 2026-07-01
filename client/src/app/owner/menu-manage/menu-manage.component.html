@@ -1,0 +1,88 @@
+<app-owner-nav></app-owner-nav>
+<div class="container">
+  <div class="page-header-row">
+    <h2>Menu Management</h2>
+    <button class="btn btn-primary" (click)="showForm = !showForm">
+      <i class="fas fa-plus"></i> Add Item
+    </button>
+  </div>
+
+  <!-- Add/Edit Form -->
+  <div class="card form-card" *ngIf="showForm">
+    <h3>{{editingId ? 'Edit' : 'Add'}} Menu Item</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Name</label>
+        <input [(ngModel)]="formData.name" placeholder="Item name">
+      </div>
+      <div class="form-group">
+        <label>Price (₹)</label>
+        <input type="number" [(ngModel)]="formData.price" placeholder="Price">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select [(ngModel)]="formData.category_id">
+          <option *ngFor="let cat of categories" [ngValue]="cat.id">{{cat.name}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input [(ngModel)]="formData.description" placeholder="Short description">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="saveItem()">{{editingId ? 'Update' : 'Add'}} Item</button>
+      <button class="btn btn-outline" (click)="cancelEdit()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Category Management -->
+  <div class="card category-section">
+    <h3>Categories</h3>
+    <div class="category-list">
+      <span class="category-chip" *ngFor="let cat of categories">
+        {{cat.name}}
+        <button class="chip-delete" (click)="deleteCategory(cat.id)" title="Delete">×</button>
+      </span>
+      <div class="add-category">
+        <input [(ngModel)]="newCategoryName" placeholder="New category" (keyup.enter)="addCategory()">
+        <button class="btn btn-primary btn-sm" (click)="addCategory()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu Items Table -->
+  <div class="card">
+    <table class="menu-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Available</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of menuItems">
+          <td>
+            <strong>{{item.name}}</strong>
+            <br><small>{{item.description}}</small>
+          </td>
+          <td>{{item.category_name}}</td>
+          <td>₹{{item.price}}</td>
+          <td>
+            <label class="toggle">
+              <input type="checkbox" [checked]="item.is_available" (change)="toggleAvailability(item)">
+              <span class="toggle-slider"></span>
+            </label>
+          </td>
+          <td>
+            <button class="icon-btn" (click)="editItem(item)" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="icon-btn danger" (click)="deleteItem(item.id)" title="Delete"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<nav class="owner-nav">
+  <div class="nav-brand">
+    <i class="fas fa-store"></i> Owner Panel
+  </div>
+  <div class="nav-links">
+    <a routerLink="/owner" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+      <i class="fas fa-chart-bar"></i> <span>Dashboard</span>
+    </a>
+    <a routerLink="/owner/orders" routerLinkActive="active">
+      <i class="fas fa-receipt"></i> <span>Orders</span>
+    </a>
+    <a routerLink="/owner/menu" routerLinkActive="active">
+      <i class="fas fa-utensils"></i> <span>Menu</span>
+    </a>
+    <a routerLink="/owner/qr" routerLinkActive="active">
+      <i class="fas fa-qrcode"></i> <span>QR</span>
+    </a>
+    <a routerLink="/owner/settings" routerLinkActive="active">
+      <i class="fas fa-cog"></i> <span>Settings</span>
+    </a>
+  </div>
+</nav>

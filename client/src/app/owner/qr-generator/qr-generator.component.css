@@ -1,0 +1,14 @@
+.page-title { margin: 16px 0 4px; font-size: 20px; }
+.subtitle { color: #666; font-size: 13px; margin-bottom: 16px; }
+.qr-controls { margin-bottom: 16px; }
+.qr-controls .form-group { margin-bottom: 12px; }
+.qr-controls label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.qr-result { text-align: center; }
+.qr-image { width: 250px; height: 250px; margin-bottom: 14px; }
+.qr-url { font-size: 12px; color: #666; margin-bottom: 14px; word-break: break-all; }
+.qr-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+@media (min-width: 768px) {
+  .qr-image { width: 300px; height: 300px; }
+  .page-title { font-size: 24px; }
+}

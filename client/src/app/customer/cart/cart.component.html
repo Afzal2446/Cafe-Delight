@@ -1,0 +1,74 @@
+<div class="cart-page container">
+  <header class="page-header">
+    <a routerLink="/order" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+    <h2>Your Cart</h2>
+  </header>
+
+  <div *ngIf="items.length === 0" class="empty-cart">
+    <i class="fas fa-shopping-cart"></i>
+    <p>Your cart is empty</p>
+    <a routerLink="/order" class="btn btn-primary">Browse Menu</a>
+  </div>
+
+  <div *ngIf="items.length > 0">
+    <div class="cart-items">
+      <div class="cart-item card" *ngFor="let item of items">
+        <div class="item-info">
+          <h4>{{item.name}}</h4>
+          <p class="item-price">₹{{item.price}}</p>
+        </div>
+        <div class="item-controls">
+          <button class="qty-btn" (click)="updateQty(item.menu_item_id, item.quantity - 1)">-</button>
+          <span class="qty">{{item.quantity}}</span>
+          <button class="qty-btn" (click)="updateQty(item.menu_item_id, item.quantity + 1)">+</button>
+          <button class="remove-btn" (click)="remove(item.menu_item_id)">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        <div class="item-total">₹{{item.price * item.quantity}}</div>
+      </div>
+    </div>
+
+    <div class="order-form card">
+      <h3>Order Details</h3>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input [(ngModel)]="customerName" placeholder="Enter your name">
+      </div>
+      <div class="form-group">
+        <label>Table Number</label>
+        <input type="number" [(ngModel)]="tableNumber" placeholder="Table #">
+      </div>
+      <div class="form-group">
+        <label>Special Notes</label>
+        <textarea [(ngModel)]="notes" placeholder="Any special requests..." rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <div class="payment-options">
+          <label class="payment-option" *ngFor="let mode of paymentModes">
+            <input type="radio" name="payment" [value]="mode.value" [(ngModel)]="paymentMode">
+            <span class="payment-label">
+              <i [class]="mode.icon"></i> {{mode.label}}
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-summary card">
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span>₹{{cartService.getTotal()}}</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total</span>
+        <span>₹{{cartService.getTotal()}}</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary place-order-btn" (click)="placeOrder()" [disabled]="isPlacing">
+      {{isPlacing ? 'Placing Order...' : 'Place Order — ₹' + cartService.getTotal()}}
+    </button>
+  </div>
+</div>

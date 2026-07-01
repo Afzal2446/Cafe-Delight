@@ -1,0 +1,59 @@
+<div class="tracking-page container">
+  <div class="success-card card">
+    <div class="success-icon">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    <h2>Order Placed!</h2>
+    <p class="order-id">Order #{{orderId}}</p>
+
+    <!-- Status Tracker -->
+    <div class="status-tracker" *ngIf="order && order.status !== 'cancelled'">
+      <div
+        class="status-step"
+        *ngFor="let step of statusSteps; let i = index"
+        [class.complete]="isStepComplete(i)"
+        [class.active]="isStepActive(i)">
+        <div class="step-icon">
+          <i [class]="step.icon"></i>
+        </div>
+        <span class="step-label">{{step.label}}</span>
+        <div class="step-line" *ngIf="i < statusSteps.length - 1"></div>
+      </div>
+    </div>
+
+    <div class="cancelled-notice" *ngIf="order && order.status === 'cancelled'">
+      <i class="fas fa-times-circle"></i>
+      <p>Your order has been cancelled</p>
+    </div>
+
+    <!-- Order Details -->
+    <div class="order-details" *ngIf="order">
+      <h3>Order Details</h3>
+      <div class="detail-row" *ngFor="let item of order.items">
+        <span>{{item.item_name}} × {{item.quantity}}</span>
+        <span>₹{{item.price * item.quantity}}</span>
+      </div>
+      <div class="detail-row total-row">
+        <strong>Total</strong>
+        <strong>₹{{order.total_amount}}</strong>
+      </div>
+      <div class="meta-info">
+        <p *ngIf="order.customer_name"><i class="fas fa-user"></i> {{order.customer_name}}</p>
+        <p *ngIf="order.table_number"><i class="fas fa-chair"></i> Table {{order.table_number}}</p>
+        <p><i class="fas fa-money-bill"></i> {{order.payment_mode | titlecase}}</p>
+        <p>
+          <i class="fas fa-credit-card"></i> Payment:
+          <span [class.paid]="order.payment_status === 'paid'" class="payment-badge">
+            {{order.payment_status | titlecase}}
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <p class="live-note" *ngIf="order && order.status !== 'served' && order.status !== 'cancelled'">
+      <i class="fas fa-sync-alt fa-spin"></i> This page updates automatically
+    </p>
+
+    <a routerLink="/order" class="btn btn-primary">Order More</a>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: cafe-qr-order
+    runtime: node
+    buildCommand: npm install && cd client && npm install && npx ng build
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    disk:
+      name: cafe-data
+      mountPath: /opt/render/project/src/server/data
+      sizeGB: 1

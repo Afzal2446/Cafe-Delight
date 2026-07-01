@@ -1,0 +1,70 @@
+<app-owner-nav></app-owner-nav>
+<div class="container">
+  <h2 class="page-title">Orders</h2>
+
+  <div class="filters">
+    <button *ngFor="let s of statuses" class="cat-btn" [class.active]="filterStatus === s.value" (click)="filter(s.value)">
+      {{s.label}}
+    </button>
+  </div>
+
+  <div class="orders-list">
+    <div class="order-card card" *ngFor="let order of orders" (click)="selectOrder(order)">
+      <div class="order-header">
+        <span class="order-id">#{{order.id}}</span>
+        <span class="badge" [ngClass]="'badge-' + order.status">{{order.status}}</span>
+      </div>
+      <div class="order-meta">
+        <span *ngIf="order.customer_name"><i class="fas fa-user"></i> {{order.customer_name}}</span>
+        <span *ngIf="order.table_number"><i class="fas fa-chair"></i> Table {{order.table_number}}</span>
+        <span><i class="fas fa-clock"></i> {{order.created_at}}</span>
+      </div>
+      <div class="order-footer">
+        <span class="order-total">₹{{order.total_amount}}</span>
+        <span class="payment-mode"><i class="fas fa-money-bill"></i> {{order.payment_mode}}</span>
+        <span class="payment-status" [class.paid]="order.payment_status === 'paid'">
+          {{order.payment_status}}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-backdrop" *ngIf="selectedOrder" (click)="selectedOrder = null">
+    <div class="modal card" (click)="$event.stopPropagation()">
+      <h3>Order #{{selectedOrder.id}}</h3>
+      <div class="modal-body">
+        <div class="detail-items" *ngIf="orderDetails">
+          <div class="detail-item" *ngFor="let item of orderDetails.items">
+            <span>{{item.item_name}} × {{item.quantity}}</span>
+            <span>₹{{item.price * item.quantity}}</span>
+          </div>
+          <div class="detail-total">
+            <strong>Total: ₹{{orderDetails.total_amount}}</strong>
+          </div>
+          <p *ngIf="orderDetails.notes" class="notes"><strong>Notes:</strong> {{orderDetails.notes}}</p>
+        </div>
+
+        <div class="status-actions">
+          <label>Update Status:</label>
+          <select [(ngModel)]="newStatus" (change)="updateStatus()">
+            <option value="pending">Pending</option>
+            <option value="preparing">Preparing</option>
+            <option value="ready">Ready</option>
+            <option value="served">Served</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="status-actions">
+          <label>Payment:</label>
+          <select [(ngModel)]="newPaymentStatus" (change)="updatePayment()">
+            <option value="unpaid">Unpaid</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-outline" (click)="selectedOrder = null">Close</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+<app-owner-nav></app-owner-nav>
+<div class="container">
+  <h2 class="page-title">Dashboard</h2>
+  <div class="stats-grid">
+    <div class="stat-card card">
+      <i class="fas fa-receipt"></i>
+      <div class="stat-info">
+        <span class="stat-value">{{stats.todayOrders}}</span>
+        <span class="stat-label">Today's Orders</span>
+      </div>
+    </div>
+    <div class="stat-card card">
+      <i class="fas fa-rupee-sign"></i>
+      <div class="stat-info">
+        <span class="stat-value">₹{{stats.todayRevenue}}</span>
+        <span class="stat-label">Today's Revenue</span>
+      </div>
+    </div>
+    <div class="stat-card card">
+      <i class="fas fa-clock"></i>
+      <div class="stat-info">
+        <span class="stat-value">{{stats.pendingOrders}}</span>
+        <span class="stat-label">Pending Orders</span>
+      </div>
+    </div>
+    <div class="stat-card card">
+      <i class="fas fa-hamburger"></i>
+      <div class="stat-info">
+        <span class="stat-value">{{stats.totalItems}}</span>
+        <span class="stat-label">Menu Items</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="actions-grid">
+      <a routerLink="/owner/orders" class="action-card card">
+        <i class="fas fa-receipt"></i>
+        <span>Manage Orders</span>
+      </a>
+      <a routerLink="/owner/menu" class="action-card card">
+        <i class="fas fa-plus-circle"></i>
+        <span>Add Menu Item</span>
+      </a>
+      <a routerLink="/owner/qr" class="action-card card">
+        <i class="fas fa-qrcode"></i>
+        <span>Generate QR</span>
+      </a>
+      <a routerLink="/owner/settings" class="action-card card">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+    </div>
+  </div>
+</div>

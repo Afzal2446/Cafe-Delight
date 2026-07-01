@@ -1,0 +1,30 @@
+<app-owner-nav></app-owner-nav>
+<div class="container">
+  <h2 class="page-title">QR Code Generator</h2>
+  <p class="subtitle">Generate QR codes for tables. Customers scan to open the ordering page.</p>
+
+  <div class="qr-controls card">
+    <div class="form-group">
+      <label>Table Number (optional)</label>
+      <input type="number" [(ngModel)]="tableNumber" placeholder="Leave empty for general QR">
+    </div>
+    <div class="form-group">
+      <label>Custom URL (optional)</label>
+      <input [(ngModel)]="customUrl" placeholder="https://your-domain.com">
+    </div>
+    <button class="btn btn-primary" (click)="generate()">Generate QR Code</button>
+  </div>
+
+  <div class="qr-result card" *ngIf="qrImage">
+    <img [src]="qrImage" alt="QR Code" class="qr-image">
+    <p class="qr-url">{{qrUrl}}</p>
+    <div class="qr-actions">
+      <button class="btn btn-outline" (click)="downloadQR()">
+        <i class="fas fa-download"></i> Download
+      </button>
+      <button class="btn btn-outline" (click)="printQR()">
+        <i class="fas fa-print"></i> Print
+      </button>
+    </div>
+  </div>
+</div>

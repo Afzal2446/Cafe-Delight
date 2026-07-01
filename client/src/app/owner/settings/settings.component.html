@@ -1,0 +1,25 @@
+<app-owner-nav></app-owner-nav>
+<div class="container">
+  <h2 class="page-title">Cafe Settings</h2>
+
+  <div class="card settings-form">
+    <div class="form-group">
+      <label>Cafe Name</label>
+      <input [(ngModel)]="settings.cafe_name" placeholder="Your cafe name">
+    </div>
+    <div class="form-group">
+      <label>UPI ID (for QR payments)</label>
+      <input [(ngModel)]="settings.upi_id" placeholder="yourname@upi">
+    </div>
+    <div class="form-group">
+      <label>Contact Number</label>
+      <input [(ngModel)]="settings.contact_number" placeholder="Phone number">
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <textarea [(ngModel)]="settings.address" placeholder="Cafe address" rows="3"></textarea>
+    </div>
+    <button class="btn btn-primary" (click)="save()">Save Settings</button>
+    <span class="save-msg" *ngIf="saved">✓ Saved!</span>
+  </div>
+</div>
