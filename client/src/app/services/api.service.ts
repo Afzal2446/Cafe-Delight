@@ -40,12 +40,20 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/orders/${id}`);
   }
 
+  getPaymentInfo(id: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/orders/${id}/payment`);
+  }
+
   updateOrderStatus(id: number, status: string): Observable<any> {
     return this.http.patch(`${this.baseUrl}/orders/${id}/status`, { status });
   }
 
   updatePaymentStatus(id: number, payment_status: string): Observable<any> {
     return this.http.patch(`${this.baseUrl}/orders/${id}/payment`, { payment_status });
+  }
+
+  confirmPayment(id: number, paid_amount: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/orders/${id}/confirm-payment`, { paid_amount });
   }
 
   // Owner - Menu management
@@ -83,11 +91,24 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/owner/stats`);
   }
 
+  getStatsRange(start: string, end: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/owner/stats/range?start=${start}&end=${end}`);
+  }
+
   // QR Code
   generateQR(table?: number): Observable<any> {
     const url = table
       ? `${this.baseUrl}/qr/generate?table=${table}`
       : `${this.baseUrl}/qr/generate`;
     return this.http.get(url);
+  }
+
+  // Feedback
+  submitFeedback(feedback: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/feedback`, feedback);
+  }
+
+  getFeedback(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/feedback`);
   }
 }

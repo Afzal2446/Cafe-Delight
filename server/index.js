@@ -24,10 +24,16 @@ async function start() {
   const orderRoutes = require('./routes/orders');
   const ownerRoutes = require('./routes/owner');
   const qrRoutes = require('./routes/qr');
+  const authRoutes = require('./routes/auth');
+  const feedbackRoutes = require('./routes/feedback');
+  const { requireAuth } = require('./auth');
 
+  app.use('/api/auth', authRoutes);
   app.use('/api/menu', menuRoutes);
   app.use('/api/orders', orderRoutes);
-  app.use('/api/owner', ownerRoutes);
+  app.use('/api/feedback', feedbackRoutes);
+  // Owner management endpoints require a logged-in owner
+  app.use('/api/owner', requireAuth, ownerRoutes);
   app.use('/api/qr', qrRoutes);
 
   // Health check endpoint

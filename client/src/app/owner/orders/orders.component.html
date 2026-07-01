@@ -2,6 +2,16 @@
 <div class="container">
   <h2 class="page-title">Orders</h2>
 
+  <div class="alert-banner claim" *ngIf="claimedOrders.length > 0">
+    <i class="fas fa-hourglass-half"></i>
+    <span>{{claimedOrders.length}} payment(s) reported by customers — verify in your UPI app, then mark as Paid</span>
+  </div>
+
+  <div class="alert-banner" *ngIf="partialOrders.length > 0">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>{{partialOrders.length}} order(s) have short/partial payment — please review</span>
+  </div>
+
   <div class="filters">
     <button *ngFor="let s of statuses" class="cat-btn" [class.active]="filterStatus === s.value" (click)="filter(s.value)">
       {{s.label}}
@@ -22,8 +32,17 @@
       <div class="order-footer">
         <span class="order-total">₹{{order.total_amount}}</span>
         <span class="payment-mode"><i class="fas fa-money-bill"></i> {{order.payment_mode}}</span>
-        <span class="payment-status" [class.paid]="order.payment_status === 'paid'">
-          {{order.payment_status}}
+        <span class="payment-status"
+          [class.paid]="order.payment_status === 'paid'"
+          [class.partial]="order.payment_status === 'partial'"
+          [class.claimed]="order.payment_status === 'claimed'">
+          {{order.payment_status === 'claimed' ? 'reported' : order.payment_status}}
+        </span>
+        <span class="short-tag" *ngIf="order.payment_status === 'partial'">
+          <i class="fas fa-exclamation-circle"></i> short ₹{{getShortfall(order)}}
+        </span>
+        <span class="verify-tag" *ngIf="order.payment_status === 'claimed'">
+          <i class="fas fa-hourglass-half"></i> verify
         </span>
       </div>
     </div>
@@ -41,6 +60,19 @@
           </div>
           <div class="detail-total">
             <strong>Total: ₹{{orderDetails.total_amount}}</strong>
+          </div>
+          <div class="payment-summary">
+            <div class="pay-row">
+              <span>Amount reported by customer</span>
+              <span>₹{{orderDetails.paid_amount || 0}}</span>
+            </div>
+            <div class="pay-row short" *ngIf="orderDetails.payment_status === 'partial'">
+              <span><i class="fas fa-exclamation-triangle"></i> Shortfall</span>
+              <span>₹{{getShortfall(orderDetails)}}</span>
+            </div>
+            <p class="verify-hint" *ngIf="orderDetails.payment_status === 'claimed' || orderDetails.payment_status === 'partial'">
+              <i class="fas fa-info-circle"></i> Check your UPI app to confirm you actually received this, then set payment to Paid.
+            </p>
           </div>
           <p *ngIf="orderDetails.notes" class="notes"><strong>Notes:</strong> {{orderDetails.notes}}</p>
         </div>
@@ -60,6 +92,8 @@
           <label>Payment:</label>
           <select [(ngModel)]="newPaymentStatus" (change)="updatePayment()">
             <option value="unpaid">Unpaid</option>
+            <option value="claimed">Reported (unverified)</option>
+            <option value="partial">Partial</option>
             <option value="paid">Paid</option>
           </select>
         </div>

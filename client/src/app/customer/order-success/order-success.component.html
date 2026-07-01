@@ -50,9 +50,89 @@
       </div>
     </div>
 
+    <!-- UPI Payment Section -->
+    <div class="payment-section card" *ngIf="order && order.payment_mode === 'upi' && (order.payment_status === 'unpaid' || order.payment_status === 'partial')">
+      <h3><i class="fas fa-mobile-alt"></i> Pay ₹{{order.total_amount}} via UPI</h3>
+
+      <div *ngIf="payment">
+        <!-- Mobile: tap to open UPI app -->
+        <a [href]="payment.upiLink" class="btn btn-primary upi-pay-btn">
+          <i class="fas fa-bolt"></i> Pay with UPI App
+        </a>
+        <p class="upi-hint">Opens GPay, PhonePe, Paytm or any UPI app</p>
+
+        <div class="qr-divider"><span>or scan QR</span></div>
+
+        <!-- Auto-generated UPI QR — includes the exact amount so it auto-fills on scan -->
+        <div class="upi-qr">
+          <img [src]="payment.qr" alt="Payment QR Code">
+          <p class="upi-amount">₹{{payment.amount}}</p>
+          <p class="upi-id-text">{{payment.upiId}}</p>
+          <p class="scan-hint">Scan with GPay, PhonePe, Paytm — amount fills automatically</p>
+        </div>
+
+        <!-- Owner's own GPay QR image (optional alternative) -->
+        <div class="upi-qr gpay-qr" *ngIf="payment.qrImageUrl">
+          <p class="alt-label">Or use our GPay QR</p>
+          <img [src]="payment.qrImageUrl" alt="GPay QR Code">
+          <p class="scan-hint">Enter ₹{{payment.amount}} manually after scanning</p>
+        </div>
+
+        <button class="btn btn-outline paid-btn" *ngIf="!showPaidForm" (click)="openPaidForm()">
+          I've Paid — Notify Cafe
+        </button>
+
+        <div class="paid-form" *ngIf="showPaidForm">
+          <label>Amount you paid (₹)</label>
+          <input type="number" [(ngModel)]="paidAmount" min="0" placeholder="Enter amount paid">
+          <button class="btn btn-primary" (click)="confirmPayment()" [disabled]="markingPaid">
+            {{markingPaid ? 'Sending...' : 'Report Payment'}}
+          </button>
+        </div>
+        <p class="verify-note">The cafe will confirm once they receive it.</p>
+      </div>
+
+      <p class="payment-error" *ngIf="paymentError">{{paymentError}}</p>
+    </div>
+
+    <div class="payment-done card" *ngIf="order && order.payment_status === 'paid'">
+      <i class="fas fa-check-circle"></i> Payment confirmed by cafe
+    </div>
+
+    <div class="payment-claimed card" *ngIf="order && order.payment_status === 'claimed'">
+      <i class="fas fa-hourglass-half"></i>
+      Payment reported. Waiting for the cafe to confirm receipt.
+    </div>
+
+    <div class="payment-partial card" *ngIf="order && order.payment_status === 'partial'">
+      <i class="fas fa-exclamation-triangle"></i>
+      Partial payment reported: ₹{{order.paid_amount}} of ₹{{order.total_amount}}.
+      Please pay the remaining ₹{{order.total_amount - order.paid_amount}}.
+    </div>
+
     <p class="live-note" *ngIf="order && order.status !== 'served' && order.status !== 'cancelled'">
       <i class="fas fa-sync-alt fa-spin"></i> This page updates automatically
     </p>
+
+    <!-- Feedback -->
+    <div class="feedback-card" *ngIf="order">
+      <div *ngIf="!feedbackSubmitted">
+        <h3>Rate your experience</h3>
+        <div class="stars">
+          <i *ngFor="let s of [1,2,3,4,5]"
+             class="fas fa-star"
+             [class.filled]="s <= feedbackRating"
+             (click)="setRating(s)"></i>
+        </div>
+        <textarea [(ngModel)]="feedbackMessage" rows="2" placeholder="Tell us what you think (optional)"></textarea>
+        <button class="btn btn-primary" (click)="submitFeedback()" [disabled]="feedbackRating < 1 || feedbackSending">
+          {{feedbackSending ? 'Sending...' : 'Submit Feedback'}}
+        </button>
+      </div>
+      <div *ngIf="feedbackSubmitted" class="feedback-thanks">
+        <i class="fas fa-heart"></i> Thanks for your feedback!
+      </div>
+    </div>
 
     <a routerLink="/order" class="btn btn-primary">Order More</a>
   </div>

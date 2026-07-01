@@ -8,6 +8,7 @@
     </a>
     <a routerLink="/owner/orders" routerLinkActive="active">
       <i class="fas fa-receipt"></i> <span>Orders</span>
+      <span class="nav-badge" *ngIf="pendingCount > 0">{{pendingCount}}</span>
     </a>
     <a routerLink="/owner/menu" routerLinkActive="active">
       <i class="fas fa-utensils"></i> <span>Menu</span>
@@ -15,8 +16,20 @@
     <a routerLink="/owner/qr" routerLinkActive="active">
       <i class="fas fa-qrcode"></i> <span>QR</span>
     </a>
+    <a routerLink="/owner/feedback" routerLinkActive="active">
+      <i class="fas fa-star"></i> <span>Feedback</span>
+    </a>
     <a routerLink="/owner/settings" routerLinkActive="active">
       <i class="fas fa-cog"></i> <span>Settings</span>
     </a>
+    <a class="logout-link" (click)="logout()">
+      <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+    </a>
   </div>
 </nav>
+
+<div class="new-order-toast" *ngIf="showToast" (click)="goToOrders()">
+  <i class="fas fa-bell"></i>
+  <span>{{toastMessage}}</span>
+  <span class="toast-cta">View</span>
+</div>

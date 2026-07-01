@@ -12,6 +12,14 @@
       <input [(ngModel)]="settings.upi_id" placeholder="yourname@upi">
     </div>
     <div class="form-group">
+      <label>Payment QR Image URL (optional)</label>
+      <input [(ngModel)]="settings.qr_image_url" placeholder="Paste a link to your UPI QR image">
+      <small class="field-hint">Upload your GPay/PhonePe QR image somewhere (e.g. imgur) and paste the link here. Customers will see it on the payment screen.</small>
+      <div class="qr-preview" *ngIf="settings.qr_image_url">
+        <img [src]="settings.qr_image_url" alt="Your UPI QR">
+      </div>
+    </div>
+    <div class="form-group">
       <label>Contact Number</label>
       <input [(ngModel)]="settings.contact_number" placeholder="Phone number">
     </div>

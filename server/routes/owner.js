@@ -115,13 +115,51 @@ router.put('/settings', (req, res) => {
 
 router.get('/stats', (req, res) => {
   const db = getDb();
-  const totalOrders = db.exec('SELECT COUNT(*) FROM orders')[0]?.values[0][0] || 0;
-  const todayOrders = db.exec("SELECT COUNT(*) FROM orders WHERE date(created_at) = date('now')")[0]?.values[0][0] || 0;
-  const todayRevenue = db.exec("SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE date(created_at) = date('now') AND status != 'cancelled'")[0]?.values[0][0] || 0;
-  const pendingOrders = db.exec("SELECT COUNT(*) FROM orders WHERE status = 'pending'")[0]?.values[0][0] || 0;
-  const totalItems = db.exec('SELECT COUNT(*) FROM menu_items')[0]?.values[0][0] || 0;
+  const scalar = (sql) => db.exec(sql)[0]?.values[0][0] || 0;
 
-  res.json({ totalOrders, todayOrders, todayRevenue, pendingOrders, totalItems });
+  const totalOrders = scalar('SELECT COUNT(*) FROM orders');
+  const todayOrders = scalar("SELECT COUNT(*) FROM orders WHERE date(created_at) = date('now')");
+  const todayRevenue = scalar("SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE date(created_at) = date('now') AND status != 'cancelled'");
+  const weekOrders = scalar("SELECT COUNT(*) FROM orders WHERE date(created_at) >= date('now', '-6 days')");
+  const weekRevenue = scalar("SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE date(created_at) >= date('now', '-6 days') AND status != 'cancelled'");
+  const monthOrders = scalar("SELECT COUNT(*) FROM orders WHERE date(created_at) >= date('now', 'start of month')");
+  const monthRevenue = scalar("SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE date(created_at) >= date('now', 'start of month') AND status != 'cancelled'");
+  const pendingOrders = scalar("SELECT COUNT(*) FROM orders WHERE status = 'pending'");
+  const totalItems = scalar('SELECT COUNT(*) FROM menu_items');
+
+  res.json({
+    totalOrders, todayOrders, todayRevenue,
+    weekOrders, weekRevenue, monthOrders, monthRevenue,
+    pendingOrders, totalItems
+  });
+});
+
+// --- DATE RANGE REPORT ---
+
+router.get('/stats/range', (req, res) => {
+  const { start, end } = req.query;
+  if (!start || !end) {
+    return res.status(400).json({ error: 'start and end dates are required (YYYY-MM-DD)' });
+  }
+
+  const orders = queryAll(
+    `SELECT * FROM orders
+     WHERE date(created_at) BETWEEN date(?) AND date(?)
+     ORDER BY created_at DESC`,
+    [start, end]
+  );
+
+  const validOrders = orders.filter(o => o.status !== 'cancelled');
+  const revenue = validOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+
+  res.json({
+    start,
+    end,
+    orderCount: orders.length,
+    revenue: +revenue.toFixed(2),
+    cancelledCount: orders.length - validOrders.length,
+    orders
+  });
 });
 
 module.exports = router;

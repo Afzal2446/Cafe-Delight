@@ -19,6 +19,7 @@ export class CartComponent {
   notes = '';
   paymentMode = 'cash';
   isPlacing = false;
+  validationError = '';
 
   paymentModes = [
     { value: 'cash', label: 'Cash on Counter', icon: 'fas fa-money-bill-wave' },
@@ -46,10 +47,21 @@ export class CartComponent {
 
   placeOrder() {
     if (this.items.length === 0) return;
+
+    // Validate mandatory fields
+    if (!this.customerName || !this.customerName.trim()) {
+      this.validationError = 'Please enter your name';
+      return;
+    }
+    if (this.tableNumber == null || this.tableNumber <= 0) {
+      this.validationError = 'Please enter your table number';
+      return;
+    }
+    this.validationError = '';
     this.isPlacing = true;
 
     const order = {
-      customer_name: this.customerName,
+      customer_name: this.customerName.trim(),
       table_number: this.tableNumber,
       payment_mode: this.paymentMode,
       notes: this.notes,
@@ -63,6 +75,8 @@ export class CartComponent {
     this.api.placeOrder(order).subscribe({
       next: (res) => {
         this.cartService.clear();
+        // Remember this order so the customer can track it later
+        this.saveActiveOrder(res.id);
         this.router.navigate(['/order/success', res.id]);
       },
       error: () => {
@@ -70,5 +84,9 @@ export class CartComponent {
         alert('Failed to place order. Please try again.');
       }
     });
+  }
+
+  private saveActiveOrder(orderId: number) {
+    localStorage.setItem('active_order_id', String(orderId));
   }
 }

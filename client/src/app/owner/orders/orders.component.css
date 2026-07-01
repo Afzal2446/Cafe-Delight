@@ -74,3 +74,57 @@
   .page-title { font-size: 24px; margin: 20px 0; }
   .cat-btn { padding: 8px 16px; font-size: 13px; }
 }
+
+/* Partial payment notification */
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.alert-banner i { font-size: 16px; }
+
+.payment-status.partial { background: #fff3e0; color: #e65100; }
+.short-tag { font-size: 11px; color: #e65100; font-weight: 600; }
+.short-tag i { margin-right: 3px; }
+
+.payment-summary { margin-top: 10px; padding: 10px 0; border-top: 1px solid #f0f0f0; }
+.pay-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+.pay-row.short { color: #e65100; font-weight: 600; }
+
+/* Payment claim (reported, unverified) */
+.alert-banner.claim { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
+.payment-status.claimed { background: #e3f2fd; color: #1565c0; }
+.verify-tag { font-size: 11px; color: #1565c0; font-weight: 600; }
+.verify-tag i { margin-right: 3px; }
+.verify-hint { font-size: 12px; color: #1565c0; margin-top: 8px; line-height: 1.4; }
+.verify-hint i { margin-right: 4px; }
+
+/* New order toast */
+.toast-new-order {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  z-index: 2000;
+  animation: toastDrop 0.3s ease;
+}
+.toast-new-order i { margin-right: 8px; }
+@keyframes toastDrop {
+  from { transform: translate(-50%, -30px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}

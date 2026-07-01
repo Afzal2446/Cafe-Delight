@@ -18,6 +18,7 @@ export class MenuComponent implements OnInit {
   selectedCategory: number | null = null;
   showToast = false;
   toastMessage = '';
+  activeOrderId: string | null = null;
 
   constructor(
     private api: ApiService,
@@ -37,6 +38,9 @@ export class MenuComponent implements OnInit {
         localStorage.setItem('table_number', params['table']);
       }
     });
+
+    // Show a tracking banner if the customer has an active order
+    this.activeOrderId = localStorage.getItem('active_order_id');
   }
 
   filterByCategory(catId: number | null) {

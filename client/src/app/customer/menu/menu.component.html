@@ -8,6 +8,12 @@
     </a>
   </header>
 
+  <a class="active-order-banner" *ngIf="activeOrderId" [routerLink]="['/order/success', activeOrderId]">
+    <i class="fas fa-receipt"></i>
+    <span>View your order status</span>
+    <i class="fas fa-chevron-right"></i>
+  </a>
+
   <div class="categories">
     <button class="cat-btn" [class.active]="!selectedCategory" (click)="filterByCategory(null)">All</button>
     <button

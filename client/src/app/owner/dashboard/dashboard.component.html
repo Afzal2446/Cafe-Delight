@@ -17,6 +17,34 @@
       </div>
     </div>
     <div class="stat-card card">
+      <i class="fas fa-calendar-week"></i>
+      <div class="stat-info">
+        <span class="stat-value">{{stats.weekOrders}}</span>
+        <span class="stat-label">Orders (7 days)</span>
+      </div>
+    </div>
+    <div class="stat-card card">
+      <i class="fas fa-rupee-sign"></i>
+      <div class="stat-info">
+        <span class="stat-value">₹{{stats.weekRevenue}}</span>
+        <span class="stat-label">Revenue (7 days)</span>
+      </div>
+    </div>
+    <div class="stat-card card">
+      <i class="fas fa-calendar-alt"></i>
+      <div class="stat-info">
+        <span class="stat-value">{{stats.monthOrders}}</span>
+        <span class="stat-label">Orders (This Month)</span>
+      </div>
+    </div>
+    <div class="stat-card card">
+      <i class="fas fa-rupee-sign"></i>
+      <div class="stat-info">
+        <span class="stat-value">₹{{stats.monthRevenue}}</span>
+        <span class="stat-label">Revenue (This Month)</span>
+      </div>
+    </div>
+    <div class="stat-card card">
       <i class="fas fa-clock"></i>
       <div class="stat-info">
         <span class="stat-value">{{stats.pendingOrders}}</span>
@@ -28,6 +56,73 @@
       <div class="stat-info">
         <span class="stat-value">{{stats.totalItems}}</span>
         <span class="stat-label">Menu Items</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Date Range Report -->
+  <div class="range-report card">
+    <h3><i class="fas fa-chart-line"></i> Custom Date Range Report</h3>
+    <div class="range-inputs">
+      <div class="range-field">
+        <label>From</label>
+        <input type="date" [(ngModel)]="rangeStart">
+      </div>
+      <div class="range-field">
+        <label>To</label>
+        <input type="date" [(ngModel)]="rangeEnd">
+      </div>
+      <button class="btn btn-primary" (click)="runRangeReport()" [disabled]="rangeLoading">
+        {{rangeLoading ? 'Loading...' : 'View'}}
+      </button>
+    </div>
+
+    <p class="range-error" *ngIf="rangeError"><i class="fas fa-exclamation-circle"></i> {{rangeError}}</p>
+
+    <div class="range-result" *ngIf="rangeResult && !rangeError">
+      <div class="range-result-header">
+        <p class="range-period">{{rangeResult.start}} to {{rangeResult.end}}</p>
+        <div class="range-actions">
+          <button class="icon-btn" (click)="rangeCollapsed = !rangeCollapsed" [title]="rangeCollapsed ? 'Expand' : 'Minimize'">
+            <i class="fas" [class.fa-chevron-down]="rangeCollapsed" [class.fa-chevron-up]="!rangeCollapsed"></i>
+          </button>
+          <button class="icon-btn" (click)="closeRangeReport()" title="Close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="range-summary">
+        <div class="range-stat">
+          <span class="range-value">{{rangeResult.orderCount}}</span>
+          <span class="range-label">Orders</span>
+        </div>
+        <div class="range-stat">
+          <span class="range-value">₹{{rangeResult.revenue}}</span>
+          <span class="range-label">Revenue</span>
+        </div>
+        <div class="range-stat" *ngIf="rangeResult.cancelledCount > 0">
+          <span class="range-value">{{rangeResult.cancelledCount}}</span>
+          <span class="range-label">Cancelled</span>
+        </div>
+      </div>
+
+      <div class="range-details" *ngIf="!rangeCollapsed">
+        <div class="range-orders" *ngIf="rangeResult.orders.length > 0">
+          <div class="range-order-row header-row">
+            <span class="ro-id">Order</span>
+            <span class="ro-status-col">Status</span>
+            <span class="ro-amount">Amount</span>
+          </div>
+          <div class="range-order-row" *ngFor="let o of rangeResult.orders">
+            <span class="ro-id">#{{o.id}} <span class="ro-name" *ngIf="o.customer_name">· {{o.customer_name}}</span></span>
+            <span class="ro-status-col">
+              <span class="ro-status-badge" [class.cancelled]="o.status === 'cancelled'">{{o.status}}</span>
+            </span>
+            <span class="ro-amount">₹{{o.total_amount}}</span>
+          </div>
+        </div>
+        <p class="range-empty" *ngIf="rangeResult.orders.length === 0">No orders in this period.</p>
       </div>
     </div>
   </div>

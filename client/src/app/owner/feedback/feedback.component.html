@@ -1,0 +1,36 @@
+<app-owner-nav></app-owner-nav>
+<div class="container">
+  <h2 class="page-title">Customer Feedback</h2>
+
+  <div class="feedback-summary card" *ngIf="total > 0">
+    <div class="avg-rating">
+      <span class="avg-value">{{averageRating}}</span>
+      <div class="avg-stars">
+        <i class="fas fa-star" *ngFor="let s of stars(roundedAvg())"></i>
+      </div>
+      <span class="avg-count">{{total}} review(s)</span>
+    </div>
+  </div>
+
+  <div class="feedback-list">
+    <div class="feedback-item card" *ngFor="let f of feedback">
+      <div class="fb-header">
+        <span class="fb-name">{{f.customer_name || 'Anonymous'}}</span>
+        <span class="fb-stars">
+          <i class="fas fa-star" *ngFor="let s of stars(f.rating)"></i>
+          <i class="far fa-star" *ngFor="let s of emptyStars(f.rating)"></i>
+        </span>
+      </div>
+      <p class="fb-message" *ngIf="f.message">{{f.message}}</p>
+      <div class="fb-meta">
+        <span *ngIf="f.order_id"><i class="fas fa-receipt"></i> Order #{{f.order_id}}</span>
+        <span><i class="fas fa-clock"></i> {{f.created_at}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="feedback.length === 0">
+    <i class="fas fa-comment-dots"></i>
+    <p>No feedback yet</p>
+  </div>
+</div>

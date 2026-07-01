@@ -1,0 +1,23 @@
+.page-title { margin: 16px 0; font-size: 20px; }
+
+.feedback-summary { padding: 20px; margin-bottom: 16px; }
+.avg-rating { display: flex; align-items: center; gap: 12px; }
+.avg-value { font-size: 34px; font-weight: 700; color: var(--primary); }
+.avg-stars i { color: #ffb300; font-size: 16px; }
+.avg-count { font-size: 13px; color: #666; margin-left: auto; }
+
+.feedback-list { display: flex; flex-direction: column; gap: 10px; }
+.feedback-item { padding: 14px; }
+.fb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.fb-name { font-weight: 600; font-size: 14px; }
+.fb-stars i { color: #ffb300; font-size: 13px; }
+.fb-message { font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 8px; }
+.fb-meta { display: flex; gap: 14px; font-size: 11px; color: #999; }
+.fb-meta i { margin-right: 3px; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: #999; }
+.empty-state i { font-size: 40px; margin-bottom: 10px; }
+
+@media (min-width: 768px) {
+  .page-title { font-size: 24px; margin: 20px 0; }
+}

@@ -32,12 +32,12 @@
     <div class="order-form card">
       <h3>Order Details</h3>
       <div class="form-group">
-        <label>Your Name</label>
-        <input [(ngModel)]="customerName" placeholder="Enter your name">
+        <label>Your Name <span class="required">*</span></label>
+        <input [(ngModel)]="customerName" placeholder="Enter your name" required>
       </div>
       <div class="form-group">
-        <label>Table Number</label>
-        <input type="number" [(ngModel)]="tableNumber" placeholder="Table #">
+        <label>Table Number <span class="required">*</span></label>
+        <input type="number" [(ngModel)]="tableNumber" placeholder="Table #" required>
       </div>
       <div class="form-group">
         <label>Special Notes</label>
@@ -66,6 +66,10 @@
         <span>₹{{cartService.getTotal()}}</span>
       </div>
     </div>
+
+    <p class="validation-error" *ngIf="validationError">
+      <i class="fas fa-exclamation-circle"></i> {{validationError}}
+    </p>
 
     <button class="btn btn-primary place-order-btn" (click)="placeOrder()" [disabled]="isPlacing">
       {{isPlacing ? 'Placing Order...' : 'Place Order — ₹' + cartService.getTotal()}}

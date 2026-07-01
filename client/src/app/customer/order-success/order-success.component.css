@@ -93,3 +93,52 @@
   .step-label { font-size: 12px; }
   .success-card { padding: 40px 30px; }
 }
+
+/* UPI Payment Section */
+.payment-section { margin: 20px 0; padding: 22px 18px; text-align: center; }
+.payment-section h3 { font-size: 16px; margin-bottom: 16px; color: var(--primary); }
+.upi-pay-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; padding: 14px; }
+.upi-pay-btn i { font-size: 18px; }
+.upi-hint { font-size: 12px; color: #888; margin-top: 8px; }
+
+.qr-divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #aaa; font-size: 12px; }
+.qr-divider::before, .qr-divider::after { content: ''; flex: 1; border-bottom: 1px solid #e0e0e0; }
+.qr-divider span { padding: 0 12px; }
+
+.upi-qr img { width: 200px; height: 200px; border: 1px solid #eee; border-radius: 10px; padding: 8px; background: #fff; }
+.upi-id-text { font-size: 13px; color: #555; margin-top: 8px; font-weight: 600; letter-spacing: 0.3px; }
+
+.paid-btn { width: 100%; margin-top: 20px; }
+.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+.btn-outline:hover { background: var(--primary); color: #fff; }
+.verify-note { font-size: 11px; color: #999; margin-top: 8px; }
+.payment-error { font-size: 13px; color: var(--danger); margin-top: 10px; }
+
+.payment-done { margin: 20px 0; padding: 16px; text-align: center; color: #2e7d32; font-weight: 600; background: #e8f5e9; }
+.payment-done i { margin-right: 6px; }
+
+.scan-hint { font-size: 11px; color: #999; margin-top: 4px; }
+
+.upi-amount { font-size: 20px; font-weight: 700; color: var(--primary); margin-top: 10px; }
+.gpay-qr { margin-top: 24px; padding-top: 20px; border-top: 1px dashed #ddd; }
+.alt-label { font-size: 13px; color: #666; font-weight: 600; margin-bottom: 10px; }
+
+.paid-form { margin-top: 18px; text-align: left; }
+.paid-form label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.paid-form input { width: 100%; margin-bottom: 10px; }
+.payment-partial { margin: 20px 0; padding: 16px; text-align: center; color: #e65100; font-weight: 600; background: #fff3e0; font-size: 13px; line-height: 1.5; }
+.payment-partial i { margin-right: 6px; }
+
+.payment-claimed { margin: 20px 0; padding: 16px; text-align: center; color: #1565c0; font-weight: 600; background: #e3f2fd; font-size: 13px; line-height: 1.5; }
+.payment-claimed i { margin-right: 6px; }
+
+/* Feedback */
+.feedback-card { margin: 20px 0; padding: 18px; background: #f9f9f9; border-radius: 10px; }
+.feedback-card h3 { font-size: 15px; margin-bottom: 10px; }
+.stars { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
+.stars i { font-size: 28px; color: #ddd; cursor: pointer; transition: color 0.15s, transform 0.1s; }
+.stars i.filled { color: #ffb300; }
+.stars i:hover { transform: scale(1.15); }
+.feedback-card textarea { width: 100%; margin-bottom: 10px; }
+.feedback-thanks { text-align: center; color: var(--accent); font-weight: 600; padding: 8px; }
+.feedback-thanks i { color: #e91e63; margin-right: 6px; }

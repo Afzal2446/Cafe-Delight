@@ -76,6 +76,13 @@ async function initDb() {
     )
   `);
 
+  // Migration: ensure paid_amount column exists on older databases
+  const orderCols = db.exec('PRAGMA table_info(orders)');
+  const colNames = orderCols[0] ? orderCols[0].values.map(v => v[1]) : [];
+  if (!colNames.includes('paid_amount')) {
+    db.run('ALTER TABLE orders ADD COLUMN paid_amount REAL DEFAULT 0');
+  }
+
   db.run(`
     CREATE TABLE IF NOT EXISTS owner_settings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -84,6 +91,28 @@ async function initDb() {
       qr_image_url TEXT,
       contact_number TEXT,
       address TEXT
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS owners (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      salt TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS feedback (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_name TEXT,
+      rating INTEGER NOT NULL,
+      message TEXT,
+      order_id INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
@@ -113,7 +142,7 @@ async function initDb() {
       db.run('INSERT INTO menu_items (name, description, price, category_id) VALUES (?, ?, ?, ?)', [name, desc, price, catId]);
     });
 
-    db.run('INSERT INTO owner_settings (cafe_name, upi_id) VALUES (?, ?)', ['Cafe Delight', 'cafe@upi']);
+    db.run('INSERT INTO owner_settings (cafe_name, upi_id) VALUES (?, ?)', ['Cafe Delight', 'afzal2446947@okicici']);
   }
 
   saveDb();
