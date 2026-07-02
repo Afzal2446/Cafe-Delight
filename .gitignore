@@ -3,6 +3,9 @@ client/node_modules/
 client/dist/
 client/.angular/
 server/cafe.db
+server/cafe.db-journal
+server/cafe-libsql.db
+server/cafe-libsql.db-*
 server/data/
 .env
 .vscode/

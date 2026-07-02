@@ -19,6 +19,7 @@ export class MenuComponent implements OnInit {
   showToast = false;
   toastMessage = '';
   activeOrderId: string | null = null;
+  quantities: { [id: number]: number } = {};
 
   constructor(
     private api: ApiService,
@@ -33,6 +34,13 @@ export class MenuComponent implements OnInit {
       this.filteredItems = items;
     });
 
+    // Keep a live map of item id -> quantity in the cart
+    this.cartService.cart$.subscribe(cartItems => {
+      const map: { [id: number]: number } = {};
+      cartItems.forEach(ci => map[ci.menu_item_id] = ci.quantity);
+      this.quantities = map;
+    });
+
     this.route.queryParams.subscribe(params => {
       if (params['table']) {
         localStorage.setItem('table_number', params['table']);
@@ -41,6 +49,10 @@ export class MenuComponent implements OnInit {
 
     // Show a tracking banner if the customer has an active order
     this.activeOrderId = localStorage.getItem('active_order_id');
+  }
+
+  getQty(itemId: number): number {
+    return this.quantities[itemId] || 0;
   }
 
   filterByCategory(catId: number | null) {
@@ -55,6 +67,15 @@ export class MenuComponent implements OnInit {
   addToCart(item: any) {
     this.cartService.addItem({ id: item.id, name: item.name, price: item.price });
     this.showToastMsg(`${item.name} added to cart`);
+  }
+
+  increment(item: any) {
+    this.cartService.addItem({ id: item.id, name: item.name, price: item.price });
+  }
+
+  decrement(item: any) {
+    const current = this.getQty(item.id);
+    this.cartService.updateQuantity(item.id, current - 1);
   }
 
   showToastMsg(msg: string) {

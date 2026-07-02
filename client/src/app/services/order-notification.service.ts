@@ -3,21 +3,35 @@ import { Subject, BehaviorSubject } from 'rxjs';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
 
+export interface AppNotification {
+  key: string;            // unique: 'order-<id>' or 'pay-<id>'
+  type: 'order' | 'payment';
+  orderId: number;
+  title: string;
+  detail: string;
+  createdAt: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OrderNotificationService {
-  // Latest full list of orders (newest first)
   orders$ = new BehaviorSubject<any[]>([]);
-  // Count of orders still pending
   pendingCount$ = new BehaviorSubject<number>(0);
-  // Emits the set of newly-arrived orders since the last poll
-  newOrders$ = new Subject<any[]>();
+  // Persistent, stacked notifications derived from live order state
+  notifications$ = new BehaviorSubject<AppNotification[]>([]);
+  arrived$ = new Subject<AppNotification[]>();
 
-  private knownIds = new Set<number>();
+  // Keys the owner has manually dismissed (acknowledged) — hidden until state changes
+  private acknowledged = new Set<string>();
+  private prevVisibleKeys = new Set<string>();
   private firstLoad = true;
   private timer: any = null;
   private readonly intervalMs = 5000;
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  private readonly LS_ACK = 'owner_ack_notifications';
+
+  constructor(private api: ApiService, private auth: AuthService) {
+    this.restore();
+  }
 
   start() {
     if (this.timer || !this.auth.isLoggedIn()) return;
@@ -27,37 +41,115 @@ export class OrderNotificationService {
   }
 
   stop() {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
-    this.knownIds.clear();
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+  }
+
+  /** Full reset — used on logout so a different owner starts clean. */
+  reset() {
+    this.stop();
+    this.acknowledged.clear();
+    this.prevVisibleKeys.clear();
     this.firstLoad = true;
     this.orders$.next([]);
     this.pendingCount$.next(0);
+    this.notifications$.next([]);
+    localStorage.removeItem(this.LS_ACK);
   }
 
   refreshNow() {
     if (this.auth.isLoggedIn()) this.poll();
   }
 
+  /** Owner dismissed a single notification — hide it until its state changes. */
+  dismiss(key: string) {
+    this.acknowledged.add(key);
+    this.persist();
+    this.poll();
+  }
+
+  dismissAll() {
+    this.notifications$.getValue().forEach(n => this.acknowledged.add(n.key));
+    this.persist();
+    this.poll();
+  }
+
   private poll() {
     this.api.getOrders().subscribe({
       next: (orders) => {
-        const newOnes = orders.filter(o => !this.knownIds.has(o.id));
-        if (!this.firstLoad && newOnes.length > 0) {
-          this.newOrders$.next(newOnes);
+        // Build the set of currently actionable notifications from live state
+        const actionable: AppNotification[] = [];
+        orders.forEach(o => {
+          if (o.status === 'pending') {
+            actionable.push(this.buildNotification('order', o));
+          }
+          if (o.payment_status === 'claimed' || o.payment_status === 'partial') {
+            actionable.push(this.buildNotification('payment', o));
+          }
+        });
+
+        const actionableKeys = new Set(actionable.map(n => n.key));
+        // Drop acknowledgements that are no longer actionable (so they can alert again later)
+        this.acknowledged = new Set([...this.acknowledged].filter(k => actionableKeys.has(k)));
+
+        // Visible = actionable minus what the owner already dismissed
+        const visible = actionable.filter(n => !this.acknowledged.has(n.key));
+        const visibleKeys = new Set(visible.map(n => n.key));
+
+        // Detect brand-new notifications (for sound + browser popup)
+        const fresh = visible.filter(n => !this.prevVisibleKeys.has(n.key));
+        if (!this.firstLoad && fresh.length > 0) {
           this.playBeep();
-          this.showBrowserNotification(newOnes);
+          this.showBrowserNotifications(fresh);
+          this.arrived$.next(fresh);
         }
-        orders.forEach(o => this.knownIds.add(o.id));
+
+        this.notifications$.next(visible);
+        this.prevVisibleKeys = visibleKeys;
         this.firstLoad = false;
 
         this.orders$.next(orders);
         this.pendingCount$.next(orders.filter(o => o.status === 'pending').length);
+        this.persist();
       },
       error: () => { /* interceptor handles 401 */ }
     });
+  }
+
+  private buildNotification(type: 'order' | 'payment', o: any): AppNotification {
+    const name = o.customer_name || 'Customer';
+    const table = o.table_number ? `Table ${o.table_number}` : 'No table';
+    if (type === 'payment') {
+      const label = o.payment_status === 'partial' ? 'Partial payment' : 'Payment reported';
+      return {
+        key: `pay-${o.id}`,
+        type,
+        orderId: o.id,
+        title: `${label} · Order #${o.id}`,
+        detail: `${name} · ${table} · Paid ₹${o.paid_amount} of ₹${o.total_amount}`,
+        createdAt: Date.now()
+      };
+    }
+    return {
+      key: `order-${o.id}`,
+      type,
+      orderId: o.id,
+      title: `New order #${o.id}`,
+      detail: `${name} · ${table} · ₹${o.total_amount}`,
+      createdAt: Date.now()
+    };
+  }
+
+  private persist() {
+    try {
+      localStorage.setItem(this.LS_ACK, JSON.stringify([...this.acknowledged]));
+    } catch { /* ignore */ }
+  }
+
+  private restore() {
+    try {
+      const a = localStorage.getItem(this.LS_ACK);
+      if (a) this.acknowledged = new Set(JSON.parse(a));
+    } catch { /* ignore */ }
   }
 
   private requestBrowserPermission() {
@@ -68,16 +160,10 @@ export class OrderNotificationService {
     } catch { /* ignore */ }
   }
 
-  private showBrowserNotification(newOnes: any[]) {
+  private showBrowserNotifications(items: AppNotification[]) {
     try {
       if ('Notification' in window && Notification.permission === 'granted') {
-        const title = newOnes.length === 1
-          ? `New order #${newOnes[0].id}`
-          : `${newOnes.length} new orders`;
-        const body = newOnes.length === 1
-          ? `${newOnes[0].customer_name || 'Customer'} · Table ${newOnes[0].table_number || '-'} · ₹${newOnes[0].total_amount}`
-          : 'Tap to view the orders';
-        new Notification(title, { body });
+        items.forEach(n => new Notification(n.title, { body: n.detail }));
       }
     } catch { /* ignore */ }
   }
@@ -93,7 +179,7 @@ export class OrderNotificationService {
       osc.frequency.value = 880;
       gain.gain.setValueAtTime(0.1, ctx.currentTime);
       osc.start();
-      osc.stop(ctx.currentTime + 0.2);
+      osc.stop(ctx.currentTime + 0.25);
     } catch { /* ignore */ }
   }
 }

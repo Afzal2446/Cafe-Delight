@@ -154,3 +154,34 @@
 }
 .active-order-banner span { flex: 1; }
 .active-order-banner i { font-size: 16px; }
+
+/* Quantity stepper on menu cards */
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--primary);
+  border-radius: 20px;
+  padding: 4px 6px;
+}
+.step-btn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-btn:hover { background: rgba(255,255,255,0.45); }
+.step-qty {
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 18px;
+  text-align: center;
+}

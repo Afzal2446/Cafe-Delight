@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { OrderNotificationService } from '../../services/order-notification.service';
+import { OrderNotificationService, AppNotification } from '../../services/order-notification.service';
 
 @Component({
   selector: 'app-owner-nav',
@@ -14,21 +14,20 @@ import { OrderNotificationService } from '../../services/order-notification.serv
 })
 export class OwnerNavComponent implements OnInit, OnDestroy {
   pendingCount = 0;
-  toastMessage = '';
-  showToast = false;
+  notifications: AppNotification[] = [];
   private subs: Subscription[] = [];
 
   constructor(
     private auth: AuthService,
     private router: Router,
-    public notifications: OrderNotificationService
+    public notifier: OrderNotificationService
   ) {}
 
   ngOnInit() {
-    this.notifications.start();
+    this.notifier.start();
     this.subs.push(
-      this.notifications.pendingCount$.subscribe(c => this.pendingCount = c),
-      this.notifications.newOrders$.subscribe(newOnes => this.onNewOrders(newOnes))
+      this.notifier.pendingCount$.subscribe(c => this.pendingCount = c),
+      this.notifier.notifications$.subscribe(list => this.notifications = list)
     );
   }
 
@@ -36,21 +35,22 @@ export class OwnerNavComponent implements OnInit, OnDestroy {
     this.subs.forEach(s => s.unsubscribe());
   }
 
-  private onNewOrders(newOnes: any[]) {
-    this.toastMessage = newOnes.length === 1
-      ? `New order #${newOnes[0].id} received!`
-      : `${newOnes.length} new orders received!`;
-    this.showToast = true;
-    setTimeout(() => this.showToast = false, 5000);
-  }
-
-  goToOrders() {
-    this.showToast = false;
+  openOrder(n: AppNotification) {
+    this.notifier.dismiss(n.key);
     this.router.navigate(['/owner/orders']);
   }
 
+  dismiss(event: Event, key: string) {
+    event.stopPropagation();
+    this.notifier.dismiss(key);
+  }
+
+  dismissAll() {
+    this.notifier.dismissAll();
+  }
+
   logout() {
-    this.notifications.stop();
+    this.notifier.reset();
     this.auth.logout();
     this.router.navigate(['/owner/login']);
   }

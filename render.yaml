@@ -9,7 +9,13 @@ services:
         value: production
       - key: PORT
         value: 3000
-    disk:
-      name: cafe-data
-      mountPath: /opt/render/project/src/server/data
-      sizeGB: 1
+      # Set these in the Render dashboard (Environment tab) — do not commit secrets:
+      # TURSO_DATABASE_URL  (e.g. libsql://your-db.turso.io)
+      # TURSO_AUTH_TOKEN    (the token from `turso db tokens create`)
+      # JWT_SECRET          (any long random string)
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false
+      - key: JWT_SECRET
+        sync: false

@@ -32,9 +32,14 @@
         <p class="desc">{{item.description}}</p>
         <div class="menu-card-footer">
           <span class="price">₹{{item.price}}</span>
-          <button class="btn btn-primary btn-sm" (click)="addToCart(item)">
+          <button *ngIf="getQty(item.id) === 0" class="btn btn-primary btn-sm" (click)="addToCart(item)">
             <i class="fas fa-plus"></i> Add
           </button>
+          <div *ngIf="getQty(item.id) > 0" class="qty-stepper">
+            <button class="step-btn" (click)="decrement(item)"><i class="fas fa-minus"></i></button>
+            <span class="step-qty">{{getQty(item.id)}}</span>
+            <button class="step-btn" (click)="increment(item)"><i class="fas fa-plus"></i></button>
+          </div>
         </div>
       </div>
       <span class="category-tag">{{item.category_name}}</span>

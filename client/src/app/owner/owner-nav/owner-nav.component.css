@@ -60,36 +60,74 @@
   .nav-badge { position: absolute; top: 2px; right: 2px; margin: 0; }
 }
 
-/* Global new-order toast */
-.new-order-toast {
+/* Global stacked, persistent notifications */
+.new-order-toast-stack {
   position: fixed;
   top: 70px;
-  right: 20px;
+  right: 16px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  z-index: 3000;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.notif-stack-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(0,0,0,0.65);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.clear-all-btn {
+  background: transparent;
+  border: none;
+  color: #ffd8c2;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.clear-all-btn:hover { color: #fff; text-decoration: underline; }
+
+.notif-card {
+  display: flex;
+  align-items: flex-start;
   gap: 10px;
   background: var(--primary);
   color: #fff;
-  padding: 14px 18px;
+  padding: 12px 14px;
   border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.28);
-  z-index: 3000;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
   cursor: pointer;
-  animation: toastIn 0.3s ease;
+  animation: toastIn 0.25s ease;
 }
-.new-order-toast i { font-size: 16px; }
-.new-order-toast .toast-cta {
-  background: rgba(255,255,255,0.25);
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 12px;
+.notif-card.notif-payment { background: #1565c0; }
+.notif-card > i { font-size: 16px; margin-top: 2px; }
+.notif-body { display: flex; flex-direction: column; flex: 1; gap: 2px; }
+.notif-title { font-weight: 700; font-size: 13px; }
+.notif-detail { font-size: 12px; opacity: 0.92; }
+.notif-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  flex-shrink: 0;
 }
+.notif-close:hover { background: rgba(255,255,255,0.4); }
+
 @keyframes toastIn {
   from { transform: translateX(40px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
 @media (max-width: 600px) {
-  .new-order-toast { top: auto; bottom: 20px; right: 12px; left: 12px; justify-content: center; }
+  .new-order-toast-stack { top: auto; bottom: 12px; right: 8px; left: 8px; width: auto; max-height: 50vh; }
 }

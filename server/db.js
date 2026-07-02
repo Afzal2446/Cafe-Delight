@@ -1,33 +1,43 @@
-const initSqlJs = require('sql.js');
-const fs = require('fs');
+const { createClient } = require('@libsql/client');
 const path = require('path');
 
-// Use persistent disk path in production, local path in dev
-const DATA_DIR = process.env.NODE_ENV === 'production'
-  ? path.join(__dirname, 'data')
-  : __dirname;
+// In production, set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN (from Turso).
+// In local dev, fall back to an embedded libSQL file so no cloud creds are needed.
+const url = process.env.TURSO_DATABASE_URL || `file:${path.join(__dirname, 'cafe-libsql.db')}`;
+const authToken = process.env.TURSO_AUTH_TOKEN;
 
-const DB_PATH = path.join(DATA_DIR, 'cafe.db');
+const client = createClient(authToken ? { url, authToken } : { url });
 
-let db;
+// --- Query helpers (all async) ---
+async function queryAll(sql, args = []) {
+  const res = await client.execute({ sql, args });
+  return res.rows;
+}
+
+async function queryOne(sql, args = []) {
+  const rows = await queryAll(sql, args);
+  return rows[0] || null;
+}
+
+// Runs INSERT/UPDATE/DELETE. Returns { lastInsertRowid, rowsAffected }.
+async function execute(sql, args = []) {
+  const res = await client.execute({ sql, args });
+  return {
+    lastInsertRowid: res.lastInsertRowid != null ? Number(res.lastInsertRowid) : null,
+    rowsAffected: res.rowsAffected
+  };
+}
+
+// Returns the first column of the first row (for COUNT/SUM/AVG queries). Alias the column.
+async function scalar(sql, args = []) {
+  const row = await queryOne(sql, args);
+  if (!row) return 0;
+  const v = Object.values(row)[0];
+  return v == null ? 0 : v;
+}
 
 async function initDb() {
-  // Ensure data directory exists
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-
-  const SQL = await initSqlJs();
-
-  if (fs.existsSync(DB_PATH)) {
-    const buffer = fs.readFileSync(DB_PATH);
-    db = new SQL.Database(buffer);
-  } else {
-    db = new SQL.Database();
-  }
-
-  // Create tables
-  db.run(`
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL UNIQUE,
@@ -35,7 +45,7 @@ async function initDb() {
     )
   `);
 
-  db.run(`
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS menu_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -49,7 +59,7 @@ async function initDb() {
     )
   `);
 
-  db.run(`
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       table_number INTEGER,
@@ -58,13 +68,14 @@ async function initDb() {
       payment_mode TEXT,
       payment_status TEXT DEFAULT 'unpaid',
       total_amount REAL DEFAULT 0,
+      paid_amount REAL DEFAULT 0,
       notes TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
-  db.run(`
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS order_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       order_id INTEGER NOT NULL,
@@ -76,14 +87,14 @@ async function initDb() {
     )
   `);
 
-  // Migration: ensure paid_amount column exists on older databases
-  const orderCols = db.exec('PRAGMA table_info(orders)');
-  const colNames = orderCols[0] ? orderCols[0].values.map(v => v[1]) : [];
-  if (!colNames.includes('paid_amount')) {
-    db.run('ALTER TABLE orders ADD COLUMN paid_amount REAL DEFAULT 0');
+  // Defensive migration for older databases missing paid_amount
+  const cols = await client.execute('PRAGMA table_info(orders)');
+  const hasPaid = cols.rows.some(r => r.name === 'paid_amount');
+  if (!hasPaid) {
+    await client.execute('ALTER TABLE orders ADD COLUMN paid_amount REAL DEFAULT 0');
   }
 
-  db.run(`
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS owner_settings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       cafe_name TEXT DEFAULT 'My Cafe',
@@ -94,7 +105,7 @@ async function initDb() {
     )
   `);
 
-  db.run(`
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS owners (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
@@ -105,7 +116,7 @@ async function initDb() {
     )
   `);
 
-  db.run(`
+  await client.execute(`
     CREATE TABLE IF NOT EXISTS feedback (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       customer_name TEXT,
@@ -116,13 +127,13 @@ async function initDb() {
     )
   `);
 
-  // Seed data if empty
-  const result = db.exec('SELECT COUNT(*) as count FROM categories');
-  const count = result[0]?.values[0][0] || 0;
-
-  if (count === 0) {
+  // Seed initial data only if empty
+  const count = await scalar('SELECT COUNT(*) AS c FROM categories');
+  if (Number(count) === 0) {
     const categories = ['Tea', 'Coffee', 'Snacks', 'Dinner', 'Beverages', 'Desserts'];
-    categories.forEach(c => db.run('INSERT INTO categories (name) VALUES (?)', [c]));
+    for (const c of categories) {
+      await client.execute({ sql: 'INSERT INTO categories (name) VALUES (?)', args: [c] });
+    }
 
     const items = [
       ['Masala Tea', 'Traditional Indian masala chai', 30, 1],
@@ -138,25 +149,18 @@ async function initDb() {
       ['Lemon Soda', 'Fresh lemon soda', 40, 5],
       ['Gulab Jamun', 'Sweet gulab jamun (2 pcs)', 50, 6]
     ];
-    items.forEach(([name, desc, price, catId]) => {
-      db.run('INSERT INTO menu_items (name, description, price, category_id) VALUES (?, ?, ?, ?)', [name, desc, price, catId]);
+    for (const [name, desc, price, catId] of items) {
+      await client.execute({
+        sql: 'INSERT INTO menu_items (name, description, price, category_id) VALUES (?, ?, ?, ?)',
+        args: [name, desc, price, catId]
+      });
+    }
+
+    await client.execute({
+      sql: 'INSERT INTO owner_settings (cafe_name, upi_id) VALUES (?, ?)',
+      args: ['Cafe Delight', 'afzal2446947@okicici']
     });
-
-    db.run('INSERT INTO owner_settings (cafe_name, upi_id) VALUES (?, ?)', ['Cafe Delight', 'afzal2446947@okicici']);
   }
-
-  saveDb();
-  return db;
 }
 
-function saveDb() {
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(DB_PATH, buffer);
-}
-
-function getDb() {
-  return db;
-}
-
-module.exports = { initDb, getDb, saveDb };
+module.exports = { initDb, queryAll, queryOne, execute, scalar, client };
